@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sector Privado - Papus por México</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="app.js"></script>
+</head>
+<body class="private-body">
+
+  <!-- ===== NAVBAR ===== -->
+  <header class="navbar">
+    <div class="logo">Papus <span>por México</span></div>
+    <nav class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="index.html#sobre-nosotros">Sobre Nosotros</a>
+      <a href="sector-publico.html">Sector Público</a>
+      <a href="sector-privado.html" class="active">Sector Privado</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+  </header>
+
+  <!-- ===== SECCIÓN DE SUBIDA ===== -->
+  <section class="upload-section fade-in">
+    <div class="upload-container">
+      <h1>Subir archivo</h1>
+      <p>
+        Sube tus reportes financieros, facturas o documentos de gasto del sector privado.
+        Nuestro sistema los analizará para detectar áreas de mejora y transparencia.
+      </p>
+
+      <form id="uploadForm" class="upload-box">
+        <label for="fileInput" class="upload-btn">Seleccionar archivo</label>
+        <input type="file" id="fileInput" accept=".pdf,.xls,.xlsx,.csv" hidden />
+        <p class="drag-text">o suelta tus archivos aquí</p>
+
+        <!-- 📄 Aquí aparecerá el archivo seleccionado -->
+        <div id="fileSelected" class="file-selected hidden">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span id="fileName" class="file-name"></span>
+          </div>
+          <button id="analyzeBtn" class="analyze-btn">Analizar documento</button>
+        </div>
+      </form>
+
+      <!-- 🔁 Botón para cambiar archivo -->
+      <button id="changeFileBtn" class="change-file-btn hidden">Seleccionar otro documento</button>
+    </div>
+  </section>
+
+</body>
+</html>
