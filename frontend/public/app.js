@@ -28,7 +28,120 @@ const show = (el) => el && el.classList.remove("hidden");
 const hide = (el) => el && el.classList.add("hidden");
 
 // ===========================
-// Utilidades comunes
+// Utilidades: hashing & fingerprint "temp ingenioso"
+// ===========================
+async function sha256Hex(str) {
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest("SHA-256", enc.encode(str));
+  const bytes = Array.from(new Uint8Array(buf));
+  return bytes.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Genera un fingerprint determinista de los archivos seleccionados.
+ * Ordena por nombre, concatena "name:size" y saca SHA-256.
+ * Devuelve { fp, bucket } donde bucket = primeros 8 hex (para sharding).
+ */
+async function buildClientFP(fileList) {
+  const arr = Array.from(fileList).map(f => `${f.name}:${f.size}`).sort();
+  const joined = arr.join("|");
+  const fp = await sha256Hex(joined);
+  const bucket = fp.slice(0, 8);
+  return { fp, bucket };
+}
+
+// ===========================
+// Utilidades: API helpers
+// ===========================
+/**
+ * Pre-chequeo en servidor (por nombre + tamaño). Si el endpoint no existe, retorna null (fallback).
+ * request: { items:[{name,size}], client_fp? }
+ * response esperado:
+ *  {
+ *    items:[{name,size,exists,ruta_relativa,cache,analysis?}],
+ *    ruta_relativa:"...",                // si aplica
+ *    combined_cache:{...} | null         // si hay caché para la combinación
+ *  }
+ */
+async function preflightCheck(files, clientFp) {
+  const meta = Array.from(files).map(f => ({ name: f.name, size: f.size }));
+  try {
+    const res = await fetch(`${API_BASE}/api/files/check`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: meta, client_fp: clientFp || null })
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Intenta obtener caché para una ruta.
+ * GET /api/cache/get?ruta_relativa=...
+ * response: { exists:true, analysis:{...} } o { exists:false }
+ */
+async function getCacheByRoute(rutaRelativa) {
+  try {
+    const res = await fetch(`${API_BASE}/api/cache/get?ruta_relativa=${encodeURIComponent(rutaRelativa)}`);
+    if (!res.ok) return { exists: false };
+    const data = await res.json();
+    return { exists: !!data?.exists, analysis: data?.analysis || null };
+  } catch {
+    return { exists: false };
+  }
+}
+
+/**
+ * Analiza por ruta usando el endpoint preferido y un fallback compatible.
+ * Devuelve el payload de análisis (objeto).
+ */
+async function fetchAnalysisByRoute(rutaRelativa) {
+  let res, data;
+  // Preferido: by-path
+  try {
+    res = await fetch(`${API_BASE}/api/analizar/by-path?ruta_relativa=${encodeURIComponent(rutaRelativa)}`);
+    if (res.ok) {
+      data = await res.json();
+      return data?.resultado || data;
+    }
+  } catch {}
+
+  // Fallback: segmentado
+  try {
+    const safe = rutaRelativa.replace(/^\/+/, "");
+    res = await fetch(`${API_BASE}/api/analizar/${safe}`);
+    if (res.ok) {
+      data = await res.json();
+      return data?.resultado || data;
+    }
+  } catch {}
+
+  // Opcional: si tienes un "start" que dispara y devuelve analysis
+  try {
+    res = await fetch(`${API_BASE}/api/analyze/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ruta_relativa: rutaRelativa })
+    });
+    if (res.ok) {
+      data = await res.json();
+      return data?.resultado || data?.analysis || data;
+    }
+  } catch {}
+
+  throw new Error("No se pudo obtener el análisis por ruta.");
+}
+
+function rememberRouteAndMaybeCache(rutaRelativa, cacheAnalysis) {
+  if (rutaRelativa) sessionStorage.setItem("ppm_saved_route", rutaRelativa);
+  if (cacheAnalysis) sessionStorage.setItem("ppm_cached_analysis", JSON.stringify(cacheAnalysis));
+}
+
+// ===========================
+// Render de análisis (reusado en visor y sector privado)
 // ===========================
 function renderAnalysis(intoEl, data) {
   if (!intoEl) return;
@@ -82,7 +195,7 @@ function renderAnalysis(intoEl, data) {
               <td>$${(p.costo_en_contrato ?? 0).toLocaleString()}</td>
               <td>$${(p.precio_estimado_mercado ?? 0).toLocaleString()}</td>
               <td>$${(p.diferencia ?? 0).toLocaleString()}</td>
-              <td>${(p["diferencia_%"] ?? 0).toFixed ? p["diferencia_%"].toFixed(2) : p["diferencia_%"] ?? "0"}%</td>
+              <td>${(p["diferencia_%"] ?? 0).toFixed ? p["diferencia_%"].toFixed(2) : (p["diferencia_%"] ?? "0")}%</td>
             </tr>`).join("")}
         </tbody>
       </table>
@@ -98,10 +211,9 @@ function renderAnalysis(intoEl, data) {
 }
 
 // ===========================
-// Página: Sector Privado (subida)
+// Página: Sector Privado (subida + dedupe + cache + análisis)
 // ===========================
 (function wireSectorPrivado() {
-  // Evita doble cableado
   if (window.__ppmUploadWired) return;
   window.__ppmUploadWired = true;
 
@@ -118,26 +230,15 @@ function renderAnalysis(intoEl, data) {
   let selectedFiles = [];
   fileInput.multiple = true;
 
-  function handleFileSelectFromInput() {
-    if (fileInput.files.length > 0) {
-      setFiles(fileInput.files);
-    }
-  }
-
   function setFiles(files) {
     const pdfs = Array.from(files).filter(f =>
       f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf")
     );
-    if (!pdfs.length) {
-      alert("Selecciona al menos un PDF.");
-      return;
-    }
-    if (pdfs.length > MAX_FILES) {
-      alert(`Máximo ${MAX_FILES} archivos. Se tomarán los primeros ${MAX_FILES}.`);
-    }
+    if (!pdfs.length) { alert("Selecciona al menos un PDF."); return; }
+    if (pdfs.length > MAX_FILES) alert(`Máximo ${MAX_FILES} archivos. Se tomarán los primeros ${MAX_FILES}.`);
     selectedFiles = pdfs.slice(0, MAX_FILES);
 
-    // (Opcional) Guarda base64 del primero para previsualización local si lo deseas
+    // Previsualización opcional del primero
     const first = selectedFiles[0];
     if (first) {
       const reader = new FileReader();
@@ -159,23 +260,21 @@ function renderAnalysis(intoEl, data) {
     if (dragText) dragText.style.display = "none";
   }
 
-  // Solo el botón abre el selector (evita click fantasma tras drop)
+  // Botón seleccionar
   const pickBtn = uploadBox ? uploadBox.querySelector(".upload-btn") : null;
   on(pickBtn, "click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     fileInput.click();
   });
 
   // Input change
-  on(fileInput, "change", handleFileSelectFromInput);
+  on(fileInput, "change", () => setFiles(fileInput.files));
 
-  // Drag & Drop sin disparar diálogo
+  // Drag & Drop
   let suppressNextClick = false;
   ["dragenter","dragover","dragleave","drop"].forEach(ev => {
     on(uploadBox, ev, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
 
       if (ev === "dragenter" || ev === "dragover") {
         uploadBox.classList.add("drag-active");
@@ -194,14 +293,9 @@ function renderAnalysis(intoEl, data) {
     });
   });
 
-  // (Opcional) Si quieres permitir click en toda la caja, protégelo:
   on(uploadBox, "click", (e) => {
-    if (suppressNextClick) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
-    // Si quieres que cualquier click en la caja abra el selector, descomenta:
+    if (suppressNextClick) { e.preventDefault(); e.stopPropagation(); return; }
+    // Si quieres que cualquier click abra el selector, descomenta:
     // fileInput.click();
   });
 
@@ -227,7 +321,7 @@ function renderAnalysis(intoEl, data) {
     }
   });
 
-  // Subir a API y pasar al visor
+  // Subir / cache / analizar / visor
   on(analyzeBtn, "click", async (e) => {
     e.preventDefault();
     if (!selectedFiles.length) {
@@ -235,33 +329,95 @@ function renderAnalysis(intoEl, data) {
       return;
     }
 
-    analyzeBtn.textContent = "🔍 Analizando...";
+    analyzeBtn.textContent = "🔎 Revisando duplicados...";
     analyzeBtn.disabled = true;
     analyzeBtn.style.opacity = "0.7";
 
-    const fd = new FormData();
-    selectedFiles.forEach(f => fd.append("files", f, f.name));
-
     try {
-      const upRes = await fetch(`${API_BASE}/api/upload/temp`, { method: "POST", body: fd });
+      // TEMP ingenioso: fingerprint determinista
+      const { fp, bucket } = await buildClientFP(selectedFiles);
+      const clientTemp = `temp/${bucket}/${fp}`;
+
+      // 1) Pre-chequeo en servidor (por nombre y tamaño)
+      const pre = await preflightCheck(selectedFiles, fp);
+
+      // 1.a) Si el endpoint no existe o falló → fallback al flujo antiguo
+      if (!pre) {
+        analyzeBtn.textContent = "⬆️ Subiendo...";
+        const fd = new FormData();
+        selectedFiles.forEach(f => fd.append("files", f, f.name));
+        const upRes = await fetch(`${API_BASE}/api/upload/temp?client_fp=${encodeURIComponent(fp)}`, {
+          method: "POST", body: fd
+        });
+        if (!upRes.ok) {
+          const err = await upRes.json().catch(() => ({}));
+          throw new Error(err.detail || `Error al subir (${upRes.status})`);
+        }
+        const upData = await upRes.json();
+        rememberRouteAndMaybeCache(upData.ruta_relativa || clientTemp, upData.analysis);
+        analyzeBtn.textContent = "✅ Análisis iniciado";
+        analyzeBtn.style.background = "#77c36b";
+        analyzeBtn.style.color = "white";
+        analyzeBtn.style.opacity = "1";
+        setTimeout(() => { window.location.href = "abrir-archivo.html"; }, 600);
+        return;
+      }
+
+      // 2) Hay pre-check; inspeccionamos resultados
+      const items = pre.items || [];
+      const allExist = items.length && items.every(it => it.exists);
+      const someCache = !!(pre.combined_cache || items.find(it => it.cache && (it.analysis || pre.combined_cache)));
+
+      const rutaRelativa =
+        pre.ruta_relativa ||
+        (items.map(i => i.ruta_relativa).filter(Boolean)[0]) ||
+        clientTemp;
+
+      // 2.a) Todos existen y hay caché → usar caché
+      if (allExist && someCache) {
+        const cacheAnalysis = pre.combined_cache || items.find(i => i.analysis)?.analysis;
+        rememberRouteAndMaybeCache(rutaRelativa, cacheAnalysis);
+        analyzeBtn.textContent = "✅ Usando caché";
+        analyzeBtn.style.background = "#77c36b";
+        analyzeBtn.style.color = "white";
+        analyzeBtn.style.opacity = "1";
+        setTimeout(() => { window.location.href = "abrir-archivo.html"; }, 400);
+        return;
+      }
+
+      // 2.b) Existen pero sin caché → analizar por ruta
+      if (allExist && !someCache) {
+        analyzeBtn.textContent = "🧠 Analizando en servidor...";
+        const analysis = await fetchAnalysisByRoute(rutaRelativa);
+        rememberRouteAndMaybeCache(rutaRelativa, analysis);
+        analyzeBtn.textContent = "✅ Análisis listo";
+        analyzeBtn.style.background = "#77c36b";
+        analyzeBtn.style.color = "white";
+        analyzeBtn.style.opacity = "1";
+        setTimeout(() => { window.location.href = "abrir-archivo.html"; }, 400);
+        return;
+      }
+
+      // 2.c) Hay archivos nuevos → subir
+      analyzeBtn.textContent = "⬆️ Subiendo nuevos...";
+      const fd = new FormData();
+      selectedFiles.forEach(f => fd.append("files", f, f.name));
+      const upRes = await fetch(`${API_BASE}/api/upload/temp?client_fp=${encodeURIComponent(fp)}`, {
+        method: "POST", body: fd
+      });
       if (!upRes.ok) {
         const err = await upRes.json().catch(() => ({}));
         throw new Error(err.detail || `Error al subir (${upRes.status})`);
       }
       const upData = await upRes.json();
+      rememberRouteAndMaybeCache(upData.ruta_relativa || rutaRelativa, upData.analysis);
 
       analyzeBtn.textContent = "✅ Análisis iniciado";
       analyzeBtn.style.background = "#77c36b";
       analyzeBtn.style.color = "white";
       analyzeBtn.style.opacity = "1";
+      setTimeout(() => { window.location.href = "abrir-archivo.html"; }, 600);
 
-      // Guardar info para el visor
-      sessionStorage.setItem("ppm_saved_files", JSON.stringify(upData.saved || []));
-      sessionStorage.setItem("ppm_saved_route", upData.ruta_relativa || "temp/temp");
-
-      setTimeout(() => {
-        window.location.href = "abrir-archivo.html";
-      }, 800);
     } catch (err) {
       console.error(err);
       alert(`Error: ${err.message}`);
@@ -273,7 +429,7 @@ function renderAnalysis(intoEl, data) {
 })();
 
 // ===========================
-// VISOR DE DOCUMENTO
+// VISOR DE DOCUMENTO (usa caché si existe; si no, analiza por ruta)
 // ===========================
 (function wireVisor() {
   if (!window.location.pathname.includes("abrir-archivo.html")) return;
@@ -281,26 +437,34 @@ function renderAnalysis(intoEl, data) {
   const frame   = document.getElementById("docFrame");
   const summary = document.getElementById("analysis-summary");
 
-  // Si guardaste base64 del primero, puedes mostrarlo localmente:
+  // PDF local rápido del primero (opcional)
   const fileDataB64 = sessionStorage.getItem("fileData");
   const fileName    = sessionStorage.getItem("fileName");
-
   if (fileDataB64 && frame && fileName && fileName.toLowerCase().endsWith(".pdf")) {
     frame.src = fileDataB64;
     document.title = `Visor - ${fileName}`;
   }
 
-  // Llama a TU endpoint existente de análisis (no modificado)
-  fetch(`${API_BASE}/api/analizar/temp/temp/temp`)
+  // 1) Si hay análisis cacheado en sessionStorage, úsalo
+  const cached = sessionStorage.getItem("ppm_cached_analysis");
+  if (cached) {
+    try {
+      const json = JSON.parse(cached);
+      renderAnalysis(summary, json);
+      return;
+    } catch {}
+  }
+
+  // 2) Si no hay caché, analiza por ruta guardada (o temp calculado)
+  const ruta = sessionStorage.getItem("ppm_saved_route") || "temp/__fallback__/unknown";
+  getCacheByRoute(ruta)
     .then(async (r) => {
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        throw new Error(err.detail || `Error análisis (${r.status})`);
+      if (r.exists && r.analysis) {
+        renderAnalysis(summary, r.analysis);
+        return;
       }
-      return r.json();
-    })
-    .then((data) => {
-      const payload = data?.resultado || data;
+      // No hubo caché: analiza
+      const payload = await fetchAnalysisByRoute(ruta);
       renderAnalysis(summary, payload);
     })
     .catch((err) => {
@@ -310,31 +474,61 @@ function renderAnalysis(intoEl, data) {
 })();
 
 // ===========================
-// CARGA DINÁMICA DE JSON (si usas archivos públicos precargados)
+// (Opcional) Listado Estado → Ciudad → Obras (con indicador de caché)
+// Útil si quieres que el privado también navegue por ciudades y obras.
 // ===========================
-(function wirePublicJson() {
-  const summaryContainer = document.getElementById("analysis-summary");
-  if (!summaryContainer) return;
+(function wireCiudadesObras() {
+  const cont = $("#ciudades-obras"); // contenedor (si existe en tu HTML)
+  if (!cont) return;
 
-  // Si vienes de sector privado, ya se llenará con el análisis arriba.
-  // Si no, puedes cargar un JSON público (opcional):
-  const storedData = sessionStorage.getItem("analysisData");
-  const publicFile = sessionStorage.getItem("selectedPublicJson"); // e.g. "data/ejemplo_analisis.json"
-
-  if (storedData) {
+  async function listObras(estado, ciudad) {
+    cont.innerHTML = `<p>Cargando obras de <strong>${estado} / ${ciudad}</strong>...</p>`;
     try {
-      const jsonData = JSON.parse(storedData);
-      renderAnalysis(summaryContainer, jsonData);
-      return;
-    } catch {}
+      const res = await fetch(`${API_BASE}/api/listar/${encodeURIComponent(estado)}/${encodeURIComponent(ciudad)}`);
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      const data = await res.json();
+      const obras = data?.carpetas || [];
+      if (!obras.length) { cont.innerHTML = `<p>No hay obras en esta ciudad.</p>`; return; }
+
+      // Para cada obra, revisa si hay caché en su ruta
+      const items = await Promise.all(obras.map(async (obra) => {
+        const ruta = data.ruta_base ? `${data.ruta_base}/${obra}` : `${estado}/${ciudad}/${obra}`;
+        const cache = await getCacheByRoute(ruta);
+        return { obra, ruta, cache: cache.exists };
+      }));
+
+      cont.innerHTML = `
+        <h3>Obras en ${ciudad}</h3>
+        <ul class="obras-list">
+          ${items.map(it => `
+            <li>
+              <button class="folder-btn" data-ruta="${it.ruta}">
+                ${it.obra} ${it.cache ? '🟢 (cache)' : '⚪ (sin cache)'}
+              </button>
+            </li>
+          `).join("")}
+        </ul>
+      `;
+
+      cont.querySelectorAll("button.folder-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const ruta = btn.getAttribute("data-ruta");
+          sessionStorage.setItem("ppm_saved_route", ruta);
+          const c = await getCacheByRoute(ruta);
+          if (c.exists && c.analysis) {
+            sessionStorage.setItem("ppm_cached_analysis", JSON.stringify(c.analysis));
+          } else {
+            sessionStorage.removeItem("ppm_cached_analysis");
+          }
+          window.location.href = "abrir-archivo.html";
+        });
+      });
+
+    } catch (e) {
+      cont.innerHTML = `<p style="color:red;">${e.message}</p>`;
+    }
   }
 
-  if (publicFile) {
-    fetch(publicFile)
-      .then(res => res.json())
-      .then(data => renderAnalysis(summaryContainer, data))
-      .catch(err => {
-        summaryContainer.innerHTML = `<p style="color:red;">Error al cargar JSON público: ${err}</p>`;
-      });
-  }
+  // Si quieres, puedes exponer para que otro script lo use:
+  window.__ppmListObras = listObras;
 })();

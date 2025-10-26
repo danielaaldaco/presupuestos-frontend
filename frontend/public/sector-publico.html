@@ -9,47 +9,27 @@
     html, body { margin: 0; padding: 0; }
     #map { width: 100%; height: 100%; }
     .folder-btn {
-      display: block;
-      background-color: #f2f2f2;
-      border: 1px solid #ccc;
-      margin: 5px 0;
-      padding: 8px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.2s;
+      display: block; background-color: #f2f2f2; border: 1px solid #ccc;
+      margin: 5px 0; padding: 8px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s;
     }
     .folder-btn:hover { background-color: #d0e0ff; }
 
-    /* Cards de resumen */
     .cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 10px; margin: 10px 0; }
-    .card {
-      background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.04);
-    }
+    .card { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.04); }
     .card h4 { margin: 0 0 6px 0; font-size: 14px; color: #555; }
     .card .val { font-weight: 700; font-size: 16px; }
-
-    /* Tabla de partidas */
     .table-wrap { overflow:auto; border:1px solid #eee; border-radius: 8px; }
     table { width:100%; border-collapse: collapse; min-width: 720px; }
     th, td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; text-align: left; font-size: 14px; }
     th { background:#fafafa; position: sticky; top: 0; z-index: 1; }
     .num { text-align: right; white-space: nowrap; }
-    .chip {
-      display:inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600;
-    }
+    .chip { display:inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
     .chip-pos { background:#e8f5e9; color:#1b5e20; }
     .chip-neg { background:#ffebee; color:#b71c1c; }
     .small-muted { color:#777; font-size: 13px; }
-
-    /* Listas */
     .list { margin: 8px 0; padding-left: 18px; }
     .list li { margin: 4px 0; }
-
-    /* Panel lateral */
-    .map-info pre {
-      background:#f8f8f8; padding:10px; border-radius:6px; max-height:50vh; overflow:auto;
-    }
+    .map-info pre { background:#f8f8f8; padding:10px; border-radius:6px; max-height:50vh; overflow:auto; }
   </style>
 </head>
 <body class="private-body">
@@ -85,8 +65,8 @@
   <script>
     // ==================== CONFIG ====================
     const API_BASE = "http://127.0.0.1:8000/api"; // ajusta si tu backend usa otra IP/puerto
+    const GEO_BASE = "lugares/"; // <<--- TODOS LOS GEOJSON viven aquí
     const mxn = new Intl.NumberFormat('es-MX',{ style:'currency', currency:'MXN' });
-    const pct = (v) => (v ?? 0).toLocaleString('es-MX', { maximumFractionDigits: 2 }) + ' %';
     const fmt = (v) => (typeof v === 'number' ? v.toLocaleString('es-MX', { maximumFractionDigits: 2 }) : v);
 
     // ==================== MAPA ====================
@@ -94,19 +74,14 @@
     const capaCiudades = L.layerGroup().addTo(map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '© OpenStreetMap'
+      maxZoom: 18, attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // ==================== COLORES ====================
     function darkenColor(hex, percent) {
-      var f = parseInt(hex.slice(1),16),
-          t = percent < 0 ? 0 : 255,
-          p = percent < 0 ? percent * -1 : percent,
+      var f = parseInt(hex.slice(1),16), t = percent < 0 ? 0 : 255, p = percent < 0 ? percent * -1 : percent,
           R = f >> 16, G = (f >> 8) & 0x00ff, B = f & 0x0000ff;
       return "#" + (0x1000000 + (Math.round((t-R)*p)+R)*0x10000
-        + (Math.round((t-G)*p)+G)*0x100
-        + (Math.round((t-B)*p)+B)).toString(16).slice(1);
+        + (Math.round((t-G)*p)+G)*0x100 + (Math.round((t-B)*p)+B)).toString(16).slice(1);
     }
     function getRandomColorAndBorder() {
       const colors = ['#4CAF50','#FFD700','#F44336'];
@@ -115,7 +90,7 @@
     }
 
     // ==================== CARGAR ESTADOS ====================
-    fetch('estados_mexico.geojson')
+    fetch(`${GEO_BASE}estados_mexico.geojson`)
       .then(res => res.json())
       .then(data => {
         L.geoJSON(data, {
@@ -125,9 +100,7 @@
             const center = layer.getBounds().getCenter();
             const labelIcon = L.divIcon({
               className: 'state-label-icon',
-              html: nombre,
-              iconSize: [120,20],
-              iconAnchor: [60,10]
+              html: nombre, iconSize: [120,20], iconAnchor: [60,10]
             });
             L.marker(center, { icon: labelIcon, interactive:false }).addTo(map);
             layer.on('click', () => {
@@ -142,43 +115,51 @@
     // ==================== CARGAR CIUDADES ====================
     function cargarCiudades(estado) {
       capaCiudades.clearLayers();
+
+      // Mapa Estado -> archivo .geojson en /lugares
       const archivos = {
-        "Coahuila": "ciudades_coahuila.geojson",
-        "Nuevo León": "ciudades_nuevoleon.geojson",
-        "Chihuahua": "ciudades_chihuahua.geojson",
-        "Jalisco": "ciudades_jalisco.geojson",
-        "Sinaloa": "ciudades_sinaloa.geojson",
-        "Sonora": "ciudades_sonora.geojson",
-        "Durango": "ciudades_durango.geojson",
+        "Aguascalientes": "ciudades_aguascalientes.geojson",
         "Baja California": "ciudades_bajacalifornia.geojson",
         "Baja California Sur": "ciudades_bajacaliforniasur.geojson",
-        "Zacatecas": "ciudades_zacatecas.geojson",
-        "Aguascalientes": "ciudades_aguascalientes.geojson",
-        "Guanajuato": "ciudades_guanajuato.geojson",
-        "Querétaro": "ciudades_queretaro.geojson",
-        "Michoacán": "ciudades_michoacan.geojson",
-        "Colima": "ciudades_colima.geojson",
-        "Nayarit": "ciudades_nayarit.geojson",
-        "Tlaxcala": "ciudades_tlaxcala.geojson",
-        "Yucatán": "ciudades_yucatan.geojson",
         "Campeche": "ciudades_campeche.geojson",
-        "Quintana Roo": "ciudades_quintanaroo.geojson",
-        "Oaxaca": "ciudades_oaxaca.geojson",
         "Chiapas": "ciudades_chiapas.geojson",
-        "Veracruz": "ciudades_veracruz.geojson",
+        "Chihuahua": "ciudades_chihuahua.geojson",
+        "Ciudad de México": "ciudades_cdmx.geojson",
+        "CDMX": "ciudades_cdmx.geojson",
+        "Coahuila": "ciudades_coahuila.geojson",
+        "Colima": "ciudades_colima.geojson",
+        "Durango": "ciudades_durango.geojson",
+        "Guanajuato": "ciudades_guanajuato.geojson",
+        "Guerrero": "ciudades_guerrero.geojson",
+        "Hidalgo": "ciudades_hidalgo.geojson",
+        "Jalisco": "ciudades_jalisco.geojson",
+        "Michoacán": "ciudades_michoacan.geojson",
         "Morelos": "ciudades_morelos.geojson",
+        "Nayarit": "ciudades_nayarit.geojson",
+        "Nuevo León": "ciudades_nuevoleon.geojson",
+        "Oaxaca": "ciudades_oaxaca.geojson",
         "Puebla": "ciudades_puebla.geojson",
-        "cdmx": "ciudades_cdmx.geojson",
-        "Estado de México": "ciudades_mexico.geojson",
-        "Tamaulipas": "ciudades_tamaulipas.geojson",
+        "Querétaro": "ciudades_queretaro.geojson",
+        "Quintana Roo": "ciudades_quintanaroo.geojson",
+        "San Luis Potosí": "ciudades_sanluis.geojson",
+        "Sinaloa": "ciudades_sinaloa.geojson",
+        "Sonora": "ciudades_sonora.geojson",
         "Tabasco": "ciudades_tabasco.geojson",
-        "San Luis Potosí": "ciudades_sanluis.geojson"
+        "Tamaulipas": "ciudades_tamaulipas.geojson",
+        "Tlaxcala": "ciudades_tlaxcala.geojson",
+        "Veracruz": "ciudades_veracruz.geojson",
+        "Yucatán": "ciudades_yucatan.geojson",
+        "Zacatecas": "ciudades_zacatecas.geojson",
+        // agrega más si tienes más archivos en /lugares
       };
 
       const archivo = archivos[estado];
-      if (!archivo) return;
+      if (!archivo) {
+        console.warn(`Sin archivo de ciudades para: ${estado}`);
+        return;
+      }
 
-      fetch(archivo)
+      fetch(`${GEO_BASE}${archivo}`)
         .then(res => res.json())
         .then(data => {
           L.geoJSON(data, {
@@ -211,43 +192,22 @@
       const c = resumen || {};
       return `
         <div class="cards">
-          <div class="card">
-            <h4>Costo en contrato</h4>
-            <div class="val">${mxn.format(c.costo_en_contrato ?? 0)}</div>
-          </div>
-          <div class="card">
-            <h4>Precio estimado mercado</h4>
-            <div class="val">${mxn.format(c.precio_estimado_mercado ?? 0)}</div>
-          </div>
-          <div class="card">
-            <h4>Diferencia total</h4>
-            <div class="val">${mxn.format(c.diferencia_total ?? 0)}</div>
-          </div>
-          <div class="card">
-            <h4>Diferencia %</h4>
-            <div class="val">${(c.diferencia_porcentaje ?? 0).toLocaleString('es-MX',{maximumFractionDigits:2})}%</div>
-          </div>
-          <div class="card">
-            <h4>Credibilidad</h4>
-            <div class="val">${fmt(c.credibilidad)} / 100</div>
-          </div>
+          <div class="card"><h4>Costo en contrato</h4><div class="val">${mxn.format(c.costo_en_contrato ?? 0)}</div></div>
+          <div class="card"><h4>Precio estimado mercado</h4><div class="val">${mxn.format(c.precio_estimado_mercado ?? 0)}</div></div>
+          <div class="card"><h4>Diferencia total</h4><div class="val">${mxn.format(c.diferencia_total ?? 0)}</div></div>
+          <div class="card"><h4>Diferencia %</h4><div class="val">${(c.diferencia_porcentaje ?? 0).toLocaleString('es-MX',{maximumFractionDigits:2})}%</div></div>
+          <div class="card"><h4>Credibilidad</h4><div class="val">${(c.credibilidad ?? 0).toLocaleString('es-MX')}</div></div>
         </div>
       `;
     }
 
     function renderPartidas(partidas = []) {
-      if (!Array.isArray(partidas) || partidas.length === 0) {
-        return `<p class="small-muted">Sin partidas.</p>`;
-      }
+      if (!Array.isArray(partidas) || partidas.length === 0) return `<p class="small-muted">Sin partidas.</p>`;
       const rows = partidas.map(p => {
         const dif = p.diferencia ?? 0;
-        const chip = dif >= 0
-          ? `<span class="chip chip-pos">+${mxn.format(dif)}</span>`
-          : `<span class="chip chip-neg">${mxn.format(dif)}</span>`;
+        const chip = dif >= 0 ? `<span class="chip chip-pos">+${mxn.format(dif)}</span>` : `<span class="chip chip-neg">${mxn.format(dif)}</span>`;
         const difp = p["diferencia_%"];
-        const difpTxt = (typeof difp === 'number')
-          ? (difp >= 0 ? `+${difp.toFixed(2)}%` : `${difp.toFixed(2)}%`)
-          : '-';
+        const difpTxt = (typeof difp === 'number') ? (difp >= 0 ? `+${difp.toFixed(2)}%` : `${difp.toFixed(2)}%`) : '-';
         return `
           <tr>
             <td>${p.concepto ?? '-'}</td>
@@ -265,13 +225,7 @@
           <table>
             <thead>
               <tr>
-                <th>Concepto</th>
-                <th>Unidad</th>
-                <th>Cantidad</th>
-                <th>Costo contrato</th>
-                <th>Precio mercado</th>
-                <th>Diferencia</th>
-                <th>Diferencia %</th>
+                <th>Concepto</th><th>Unidad</th><th>Cantidad</th><th>Costo contrato</th><th>Precio mercado</th><th>Diferencia</th><th>Diferencia %</th>
               </tr>
             </thead>
             <tbody>${rows}</tbody>
@@ -319,7 +273,7 @@
       }
     }
 
-    // ==================== ANALIZAR CARPETA (PARSEA JSON) ====================
+    // ==================== ANALIZAR CARPETA ====================
     async function analizarCarpeta(estadoEnc, ciudadEnc, carpetaEnc) {
       const estado = decodeURIComponent(estadoEnc);
       const ciudad = decodeURIComponent(ciudadEnc);
@@ -336,8 +290,6 @@
         if (!res.ok) throw new Error(`Error ${res.status}`);
         const data = await res.json();
 
-        // Estructura esperada
-        // data = { ruta, estado: "ok", resultado: { resumen_general, partidas, alertas, recomendaciones } }
         const resultado = data?.resultado || {};
         const resumen = resultado?.resumen_general || {};
         const partidas = resultado?.partidas || [];
@@ -347,12 +299,9 @@
         const html = `
           <h3>✅ Análisis completado</h3>
           <p><strong>Ruta:</strong> ${estado} / ${ciudad} / ${carpeta}</p>
-
           ${renderResumen(resumen)}
-
           <h3>📦 Partidas</h3>
           ${renderPartidas(partidas)}
-
           ${renderList('⚠️ Alertas', alertas)}
           ${renderList('🛠 Recomendaciones', recomendaciones)}
         `;
@@ -362,7 +311,6 @@
       }
     }
 
-    // Exponer para que funcione el onclick de los botones
     window.analizarCarpeta = analizarCarpeta;
   </script>
 </body>
