@@ -1,0 +1,11 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Guadalajara" }, "geometry": { "type": "Point", "coordinates": [-103.3496, 20.6597] } },
+    { "type": "Feature", "properties": { "name": "Zapopan" }, "geometry": { "type": "Point", "coordinates": [-103.4000, 20.7167] } },
+    { "type": "Feature", "properties": { "name": "Tlaquepaque" }, "geometry": { "type": "Point", "coordinates": [-103.3167, 20.6333] } },
+    { "type": "Feature", "properties": { "name": "Tonalá" }, "geometry": { "type": "Point", "coordinates": [-103.2333, 20.6167] } },
+    { "type": "Feature", "properties": { "name": "Puerto Vallarta" }, "geometry": { "type": "Point", "coordinates": [-105.2300, 20.6530] } },
+    { "type": "Feature", "properties": { "name": "Lagos de Moreno" }, "geometry": { "type": "Point", "coordinates": [-101.9167, 21.3500] } }
+  ]
+}

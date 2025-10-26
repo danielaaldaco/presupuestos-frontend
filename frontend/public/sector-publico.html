@@ -18,7 +18,7 @@
     #map {
       height: 100%; 
       width: 60%;  
-      background-color: #f2f2f2; 
+      background-color: #c5c9e9; 
     }
     .table-container {
       height: 100%; 
@@ -140,7 +140,27 @@
       if (estado === "Coahuila") { 
         archivoCiudades = 'ciudades_coahuila.geojson';
       }
-      // else if (estado === "Nuevo León") { archivoCiudades = 'ciudades_nuevoleon.geojson'; }
+      else if (estado === "Nuevo León") { 
+        archivoCiudades = 'ciudades_nuevoleon.geojson'; 
+      }
+      else if (estado === "Chihuahua") { 
+        archivoCiudades = 'ciudades_chihuahua.geojson'; 
+      }
+      else if (estado === "Jalisco") { 
+        archivoCiudades = 'ciudades_jalisco.geojson'; 
+      }
+      else if (estado === "Sinaloa") { 
+        archivoCiudades = 'ciudades_sinaloa.geojson'; 
+      }
+      else if (estado === "Sonora") { 
+        archivoCiudades = 'ciudades_sonora.geojson'; 
+      }
+      else if (estado === "Durango") { 
+        archivoCiudades = 'ciudades_durango.geojson'; 
+      }
+      else if (estado === "Baja California") { 
+        archivoCiudades = 'ciudades_bajacalifornia.geojson'; 
+      }
 
       if (archivoCiudades) {
         fetch(archivoCiudades) 

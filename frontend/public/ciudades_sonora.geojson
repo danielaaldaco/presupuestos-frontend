@@ -1,0 +1,11 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Hermosillo" }, "geometry": { "type": "Point", "coordinates": [-110.9667, 29.0833] } },
+    { "type": "Feature", "properties": { "name": "Obregón" }, "geometry": { "type": "Point", "coordinates": [-109.9333, 27.4833] } },
+    { "type": "Feature", "properties": { "name": "Nogales" }, "geometry": { "type": "Point", "coordinates": [-110.9500, 31.3167] } },
+    { "type": "Feature", "properties": { "name": "San Luis Río Colorado" }, "geometry": { "type": "Point", "coordinates": [-114.7667, 32.4833] } },
+    { "type": "Feature", "properties": { "name": "Navojoa" }, "geometry": { "type": "Point", "coordinates": [-109.4444, 27.0806] } },
+    { "type": "Feature", "properties": { "name": "Guaymas" }, "geometry": { "type": "Point", "coordinates": [-110.9167, 27.9167] } }
+  ]
+}
