@@ -1,0 +1,10 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Veracruz" }, "geometry": { "type": "Point", "coordinates": [-96.1500, 19.1833] } },
+    { "type": "Feature", "properties": { "name": "Xalapa" }, "geometry": { "type": "Point", "coordinates": [-96.9167, 19.5333] } },
+    { "type": "Feature", "properties": { "name": "Coatzacoalcos" }, "geometry": { "type": "Point", "coordinates": [-94.4167, 18.1500] } },
+    { "type": "Feature", "properties": { "name": "Córdoba" }, "geometry": { "type": "Point", "coordinates": [-96.9333, 18.8833] } },
+    { "type": "Feature", "properties": { "name": "Poza Rica" }, "geometry": { "type": "Point", "coordinates": [-97.4500, 20.5333] } }
+  ]
+}

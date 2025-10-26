@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "San Luis Potosí" }, "geometry": { "type": "Point", "coordinates": [-100.9750, 22.1500] } },
+    { "type": "Feature", "properties": { "name": "Soledad" }, "geometry": { "type": "Point", "coordinates": [-100.9167, 22.1833] } },
+    { "type": "Feature", "properties": { "name": "Ciudad Valles" }, "geometry": { "type": "Point", "coordinates": [-99.0167, 21.9833] } },
+    { "type": "Feature", "properties": { "name": "Matehuala" }, "geometry": { "type": "Point", "coordinates": [-100.6500, 23.6500] } }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Zacatecas" }, "geometry": { "type": "Point", "coordinates": [-102.5714, 22.7708] } },
+    { "type": "Feature", "properties": { "name": "Guadalupe" }, "geometry": { "type": "Point", "coordinates": [-102.5167, 22.7500] } },
+    { "type": "Feature", "properties": { "name": "Fresnillo" }, "geometry": { "type": "Point", "coordinates": [-102.8667, 23.1667] } },
+    { "type": "Feature", "properties": { "name": "Jerez" }, "geometry": { "type": "Point", "coordinates": [-102.9833, 22.6500] } }
+  ]
+}

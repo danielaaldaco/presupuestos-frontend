@@ -1,0 +1,7 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Campeche" }, "geometry": { "type": "Point", "coordinates": [-90.5333, 19.8333] } },
+    { "type": "Feature", "properties": { "name": "Ciudad del Carmen" }, "geometry": { "type": "Point", "coordinates": [-91.8333, 18.6333] } }
+  ]
+}

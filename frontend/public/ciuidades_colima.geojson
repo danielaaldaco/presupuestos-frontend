@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Colima" }, "geometry": { "type": "Point", "coordinates": [-103.7250, 19.2450] } },
+    { "type": "Feature", "properties": { "name": "Manzanillo" }, "geometry": { "type": "Point", "coordinates": [-104.3167, 19.0500] } },
+    { "type": "Feature", "properties": { "name": "Tecomán" }, "geometry": { "type": "Point", "coordinates": [-103.8730, 18.9130] } },
+    { "type": "Feature", "properties": { "name": "Villa de Álvarez" }, "geometry": { "type": "Point", "coordinates": [-103.7370, 19.2550] } }
+  ]
+}

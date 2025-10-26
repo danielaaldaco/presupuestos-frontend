@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Aguascalientes" }, "geometry": { "type": "Point", "coordinates": [-102.2960, 21.8820] } },
+    { "type": "Feature", "properties": { "name": "Jesús María" }, "geometry": { "type": "Point", "coordinates": [-102.3430, 21.9640] } },
+    { "type": "Feature", "properties": { "name": "Calvillo" }, "geometry": { "type": "Point", "coordinates": [-102.7167, 21.8500] } },
+    { "type": "Feature", "properties": { "name": "Rincón de Romos" }, "geometry": { "type": "Point", "coordinates": [-102.3167, 22.2333] } }
+  ]
+}

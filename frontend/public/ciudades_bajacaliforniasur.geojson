@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "La Paz" }, "geometry": { "type": "Point", "coordinates": [-110.3108, 24.1422] } },
+    { "type": "Feature", "properties": { "name": "Cabo San Lucas" }, "geometry": { "type": "Point", "coordinates": [-109.9167, 22.8833] } },
+    { "type": "Feature", "properties": { "name": "San José del Cabo" }, "geometry": { "type": "Point", "coordinates": [-109.7000, 23.0500] } },
+    { "type": "Feature", "properties": { "name": "Ciudad Constitución" }, "geometry": { "type": "Point", "coordinates": [-111.6667, 25.0333] } }
+  ]
+}

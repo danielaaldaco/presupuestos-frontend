@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Puebla" }, "geometry": { "type": "Point", "coordinates": [-98.2000, 19.0333] } },
+    { "type": "Feature", "properties": { "name": "Tehuacán" }, "geometry": { "type": "Point", "coordinates": [-97.3833, 18.4500] } },
+    { "type": "Feature", "properties": { "name": "San Martín Texmelucan" }, "geometry": { "type": "Point", "coordinates": [-98.4333, 19.2833] } },
+    { "type": "Feature", "properties": { "name": "Atlixco" }, "geometry": { "type": "Point", "coordinates": [-98.4333, 18.9000] } }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Acapulco" }, "geometry": { "type": "Point", "coordinates": [-99.8833, 16.8500] } },
+    { "type": "Feature", "properties": { "name": "Chilpancingo" }, "geometry": { "type": "Point", "coordinates": [-99.5000, 17.5500] } },
+    { "type": "Feature", "properties": { "name": "Iguala" }, "geometry": { "type": "Point", "coordinates": [-99.5333, 18.3333] } },
+    { "type": "Feature", "properties": { "name": "Zihuatanejo" }, "geometry": { "type": "Point", "coordinates": [-101.5500, 17.6333] } }
+  ]
+}

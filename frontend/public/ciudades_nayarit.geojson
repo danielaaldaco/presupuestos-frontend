@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Tepic" }, "geometry": { "type": "Point", "coordinates": [-104.8960, 21.5080] } },
+    { "type": "Feature", "properties": { "name": "Bahía de Banderas" }, "geometry": { "type": "Point", "coordinates": [-105.2500, 20.8000] } },
+    { "type": "Feature", "properties": { "name": "Santiago Ixcuintla" }, "geometry": { "type": "Point", "coordinates": [-105.2167, 21.8167] } },
+    { "type": "Feature", "properties": { "name": "Compostela" }, "geometry": { "type": "Point", "coordinates": [-104.9000, 21.2333] } }
+  ]
+}
