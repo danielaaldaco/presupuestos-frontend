@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mapa de México (Ciudades)</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  
+  <style>
+    #map { height: 100vh; margin: 0; padding: 0; background-color: #f2f2f2; }
+    body { margin: 0; }
+    
+    /* Style for STATE labels */
+    .state-label-icon {
+      color: #000; 
+      font-weight: normal; 
+      /* --- CHANGE HERE: Increased font size --- */
+      font-size: 12px; 
+      text-align: center;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Soft black shadow */
+      pointer-events: none; white-space: nowrap;
+    }
+
+    /* Style for CITY labels */
+    .city-label-icon {
+      color: #000; 
+      font-weight: normal; 
+      font-size: 10px; 
+      text-align: center;
+      text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.7), -1px -1px 0 rgba(255, 255, 255, 0.7), 1px -1px 0 rgba(255, 255, 255, 0.7), -1px 1px 0 rgba(255, 255, 255, 0.7); /* Subtle white shadow */
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    
+    // --- (Color functions remain the same) ---
+    function darkenColor(hex, percent) {
+        var f=parseInt(hex.slice(1),16),t=percent<0?0:255,p=percent<0?percent*-1:percent,R=f>>16,G=(f>>8)&0x00ff,B=f&0x0000ff;
+        return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
+    }
+    function getRandomColorAndBorder() {
+        const colors = [ '#4CAF50', '#FFD700', '#F44336' ];
+        const randomIndex = Math.floor(Math.random() * colors.length);
+        const baseColor = colors[randomIndex];
+        const borderColor = darkenColor(baseColor, -0.2);
+        return { fillColor: baseColor, color: borderColor, weight: 2, fillOpacity: 0.9 };
+    }
+
+    // --- Map centered on Mexico ---
+    const map = L.map('map').setView([23.6345, -102.5528], 5);
+    var capaCiudades = L.layerGroup().addTo(map);
+
+    // --- LEVEL 1: Load STATES ---
+    fetch('estados_mexico.geojson') 
+      .then(res => res.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: function(feature) { return getRandomColorAndBorder(); },
+          onEachFeature: function (feature, layer) {
+            
+            var nombreEstado = feature.properties.name; 
+            
+            // Fixed STATE labels
+            var center = layer.getBounds().getCenter();
+            var labelIcon = L.divIcon({
+                className: 'state-label-icon', // Uses the updated CSS
+                html: `${nombreEstado}`,
+                iconSize: [120, 20], iconAnchor: [60, 10]
+            });
+            L.marker(center, { icon: labelIcon, interactive: false }).addTo(map);
+
+            // Click Logic (Level 1 -> Level 2)
+            layer.on('click', function () {
+              map.fitBounds(layer.getBounds());
+              const estado = feature.properties.name; 
+              console.log("Estado:", estado);
+              cargarCiudades(estado); 
+            });
+          }
+        }).addTo(map);
+      });
+
+    // --- LEVEL 2: Function to load CITIES (as text labels) ---
+    function cargarCiudades(estado) {
+      capaCiudades.clearLayers(); 
+
+      var archivoCiudades = null; 
+
+      if (estado === "Coahuila") { 
+        archivoCiudades = 'ciudades_coahuila.geojson'; // Uses the updated POINT file
+      }
+      // else if (estado === "Nuevo León") { archivoCiudades = 'ciudades_nuevoleon.geojson'; }
+
+      if (archivoCiudades) {
+        fetch(archivoCiudades) 
+          .then(res => res.json())
+          .then(data => {
+            L.geoJSON(data, {
+              
+              pointToLayer: function (feature, latlng) {
+                
+                var nombreCiudad = feature.properties.name; 
+                
+                var labelIcon = L.divIcon({
+                    className: 'city-label-icon', 
+                    html: `${nombreCiudad}`, 
+                    iconSize: [80, 20], 
+                    iconAnchor: [40, 10] 
+                });
+                
+                return L.marker(latlng, { 
+                    icon: labelIcon,
+                    interactive: true 
+                }).on('click', function() {
+                    alert(`Has hecho clic en ${nombreCiudad}`);
+                });
+              }
+
+            }).addTo(capaCiudades);
+          });
+      }
+    }
+  </script>
+</body>
+</html>

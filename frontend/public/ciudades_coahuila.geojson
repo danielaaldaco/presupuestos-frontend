@@ -1,0 +1,20 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Saltillo" }, "geometry": { "type": "Point", "coordinates": [-100.9925, 25.4232] } },
+    { "type": "Feature", "properties": { "name": "Torreón" }, "geometry": { "type": "Point", "coordinates": [-103.4068, 25.5428] } },
+    { "type": "Feature", "properties": { "name": "Monclova" }, "geometry": { "type": "Point", "coordinates": [-101.4206, 26.9080] } },
+    { "type": "Feature", "properties": { "name": "Piedras Negras" }, "geometry": { "type": "Point", "coordinates": [-100.5233, 28.7000] } },
+    { "type": "Feature", "properties": { "name": "Acuña" }, "geometry": { "type": "Point", "coordinates": [-100.9500, 29.3667] } },
+    { "type": "Feature", "properties": { "name": "Ramos Arizpe" }, "geometry": { "type": "Point", "coordinates": [-100.9478, 25.5397] } },
+    { "type": "Feature", "properties": { "name": "Sabinas" }, "geometry": { "type": "Point", "coordinates": [-101.1219, 27.8542] } },
+    { "type": "Feature", "properties": { "name": "San Pedro" }, "geometry": { "type": "Point", "coordinates": [-102.9833, 25.7500] } },
+    { "type": "Feature", "properties": { "name": "Múzquiz" }, "geometry": { "type": "Point", "coordinates": [-101.5200, 27.8800] } },
+    { "type": "Feature", "properties": { "name": "Fco. I. Madero" }, "geometry": { "type": "Point", "coordinates": [-103.2725, 25.7758] } },
+    { "type": "Feature", "properties": { "name": "Frontera" }, "geometry": { "type": "Point", "coordinates": [-101.4500, 26.9200] } },
+    { "type": "Feature", "properties": { "name": "Parras" }, "geometry": { "type": "Point", "coordinates": [-102.1800, 25.4200] } },
+    { "type": "Feature", "properties": { "name": "Castaños" }, "geometry": { "type": "Point", "coordinates": [-101.3200, 26.7800] } },
+    { "type": "Feature", "properties": { "name": "Nava" }, "geometry": { "type": "Point", "coordinates": [-100.7700, 28.4200] } },
+    { "type": "Feature", "properties": { "name": "Arteaga" }, "geometry": { "type": "Point", "coordinates": [-100.8400, 25.4400] } }
+  ]
+}
