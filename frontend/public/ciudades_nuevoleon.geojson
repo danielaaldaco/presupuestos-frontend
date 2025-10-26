@@ -1,0 +1,13 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Monterrey" }, "geometry": { "type": "Point", "coordinates": [-100.3161, 25.6866] } },
+    { "type": "Feature", "properties": { "name": "Guadalupe" }, "geometry": { "type": "Point", "coordinates": [-100.2583, 25.6750] } },
+    { "type": "Feature", "properties": { "name": "Apodaca" }, "geometry": { "type": "Point", "coordinates": [-100.1910, 25.7766] } },
+    { "type": "Feature", "properties": { "name": "San Nicolás" }, "geometry": { "type": "Point", "coordinates": [-100.2858, 25.7500] } },
+    { "type": "Feature", "properties": { "name": "San Pedro" }, "geometry": { "type": "Point", "coordinates": [-100.4034, 25.6636] } },
+    { "type": "Feature", "properties": { "name": "Santa Catarina" }, "geometry": { "type": "Point", "coordinates": [-100.4636, 25.6792] } },
+    { "type": "Feature", "properties": { "name": "Juárez" }, "geometry": { "type": "Point", "coordinates": [-100.0917, 25.6417] } },
+    { "type": "Feature", "properties": { "name": "Linares" }, "geometry": { "type": "Point", "coordinates": [-99.5667, 24.8500] } }
+  ]
+}

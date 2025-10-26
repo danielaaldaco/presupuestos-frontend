@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   
   <style>
+    /* Estilos generales */
     body { 
       margin: 0; 
       font-family: sans-serif; 
@@ -15,7 +16,7 @@
       height: 100vh;
     }
     #map {
-      height: 100%; /* ¡Crucial! Le da altura al mapa */
+      height: 100%; 
       width: 60%;  
       background-color: #f2f2f2; 
     }
@@ -27,6 +28,7 @@
       overflow-y: auto; 
       border-left: 1px solid #ccc; 
     }
+    /* Estilo para etiquetas de ESTADOS */
     .state-label-icon {
       color: #000; 
       font-weight: normal; 
@@ -35,15 +37,28 @@
       text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
       pointer-events: none; white-space: nowrap;
     }
-    .city-label-icon {
-      color: #000; 
-      font-weight: normal; 
-      font-size: 10px;
-      text-align: center;
-      text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.7), -1px -1px 0 rgba(255, 255, 255, 0.7), 1px -1px 0 rgba(255, 255, 255, 0.7), -1px 1px 0 rgba(255, 255, 255, 0.7);
-      pointer-events: none;
-      white-space: nowrap;
+    
+    /* === NUEVO ESTILO PARA TOOLTIP (Etiqueta de ciudad al pasar mouse) === */
+    .leaflet-tooltip {
+        background-color: #FFF8DC; /* Color Cornsilk (beige claro) */
+        border: 1px solid #777;    /* Borde gris oscuro */
+        border-radius: 4px;        /* Esquinas redondeadas */
+        color: #333;               /* Texto gris oscuro */
+        font-size: 10px;           /* Tamaño de letra */
+        font-weight: bold;         /* Negritas */
+        padding: 3px 6px;          /* Espacio interior */
+        white-space: nowrap;       /* Evita que se corte */
+        box-shadow: 0 1px 3px rgba(0,0,0,0.4); /* Sombra suave */
     }
+    /* Opcional: Cambiar la flechita del tooltip */
+    .leaflet-tooltip-top:before,
+    .leaflet-tooltip-bottom:before,
+    .leaflet-tooltip-left:before,
+    .leaflet-tooltip-right:before {
+        border-color: #777 transparent transparent transparent; /* Color del borde de la flecha */
+    }
+    /* === FIN NUEVO ESTILO === */
+
   </style>
 </head>
 <body>
@@ -60,7 +75,7 @@
   
   <script>
     
-    // --- Funciones de color ---
+    // --- (Funciones de color sin cambios) ---
     function darkenColor(hex, percent) {
         var f=parseInt(hex.slice(1),16),t=percent<0?0:255,p=percent<0?percent*-1:percent,R=f>>16,G=(f>>8)&0x00ff,B=f&0x0000ff;
         return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
@@ -73,16 +88,14 @@
         return { fillColor: baseColor, color: borderColor, weight: 2, fillOpacity: 0.9 };
     }
 
-    // --- INICIALIZACION DEL MAPA ---
+    // --- Inicialización del mapa ---
     const map = L.map('map').setView([23.6345, -102.5528], 5); 
     var capaCiudades = L.layerGroup().addTo(map);
 
-    // --- CARGAR ESTADOS ---
+    // --- NIVEL 1: Cargar ESTADOS ---
     fetch('estados_mexico.geojson') 
       .then(res => {
-          if (!res.ok) { 
-             throw new Error(`HTTP error! status: ${res.status} al buscar estados_mexico.geojson`);
-          }
+          if (!res.ok) { throw new Error(`HTTP error! status: ${res.status} al buscar estados_mexico.geojson`); }
           return res.json();
       })
       .then(data => {
@@ -92,20 +105,17 @@
           onEachFeature: function (feature, layer) {
             
             var nombreEstado = feature.properties.name; 
-            if (!nombreEstado) { 
-              console.warn("Estado sin propiedad 'name':", feature.properties);
-              nombreEstado = "Estado sin nombre"; 
-            }
+            if (!nombreEstado) { nombreEstado = "Estado sin nombre"; }
 
             // Nombres fijos de ESTADOS
             var center = layer.getBounds().getCenter();
             var labelIcon = L.divIcon({
-                className: 'state-label-icon',
-                html: `${nombreEstado}`,
+                className: 'state-label-icon', html: `${nombreEstado}`,
                 iconSize: [120, 20], iconAnchor: [60, 10]
             });
             L.marker(center, { icon: labelIcon, interactive: false }).addTo(map);
 
+            // Lógica de Clic (Nivel 1 -> Nivel 2)
             layer.on('click', function () {
               map.fitBounds(layer.getBounds());
               const estado = feature.properties.name; 
@@ -115,30 +125,27 @@
           }
         }).addTo(map);
       })
-      .catch(error => { // Manejo de errores
+      .catch(error => { 
           console.error('Error al cargar estados_mexico.geojson:', error);
           alert('¡Error! No se pudo cargar el archivo de estados.');
       });
 
-    // --- NIVEL 2: funcion para cargar CIUDADES ---
+    // --- NIVEL 2: Función para cargar CIUDADES (como puntos azules) ---
     function cargarCiudades(estado) {
       capaCiudades.clearLayers(); 
       console.log("Cargando ciudades para:", estado);
 
       var archivoCiudades = null; 
 
-      // Mapeo de estados a sus archivos de ciudades (puntos)
       if (estado === "Coahuila") { 
         archivoCiudades = 'ciudades_coahuila.geojson';
       }
-      // else if (estado === "Nuevo leon") { archivoCiudades = 'ciudades_nuevoleon.geojson'; }
+      // else if (estado === "Nuevo León") { archivoCiudades = 'ciudades_nuevoleon.geojson'; }
 
       if (archivoCiudades) {
         fetch(archivoCiudades) 
           .then(res => {
-              if (!res.ok) {
-                 throw new Error(`HTTP error! status: ${res.status} al buscar ${archivoCiudades}`);
-              }
+              if (!res.ok) { throw new Error(`HTTP error! status: ${res.status} al buscar ${archivoCiudades}`); }
               return res.json();
           })
           .then(data => {
@@ -148,32 +155,28 @@
               pointToLayer: function (feature, latlng) {
                 
                 var nombreCiudad = feature.properties.name; 
-                if (!nombreCiudad) {
-                  console.warn("Ciudad sin propiedad 'name':", feature.properties);
-                  nombreCiudad = "Ciudad sin nombre";
-                }
-                
-                var labelIcon = L.divIcon({
-                    className: 'city-label-icon', 
-                    html: `${nombreCiudad}`, 
-                    iconSize: [80, 20], 
-                    iconAnchor: [40, 10] 
-                });
-                
-                // nombre ciudad
-                return L.marker(latlng, { 
-                    icon: labelIcon,
-                    interactive: true 
-                }).on('click', function() {
+                if (!nombreCiudad) { nombreCiudad = "Ciudad sin nombre"; }
+
+                // identificador de la ciudad
+                return L.circleMarker(latlng, {
+                  radius: 6,           
+                  fillColor: "#3388ff", 
+                  color: "#000",        
+                  weight: 1,           
+                  opacity: 1,
+                  fillOpacity: 0.8
+                })
+                .bindTooltip(nombreCiudad) // Muestra el nombre al pasar el mouse
+                .on('click', function() {
+                    // --- Click en la Ciudad ---
                     console.log("Clic en Ciudad:", nombreCiudad);
-                    alert(`Has hecho clic en ${nombreCiudad}`);
-                    // funcion para cargar datos en la tabla
+                    // aqui iria el evento de que al hacer click en la ciudad 
                 });
               }
 
             }).addTo(capaCiudades);
           })
-          .catch(error => { // Manejo de errores
+          .catch(error => { 
              console.error(`Error al cargar ${archivoCiudades}:`, error);
              alert(`¡Error! No se pudo cargar el archivo de ciudades ${archivoCiudades}.`);
           });
