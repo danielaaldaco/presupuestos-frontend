@@ -327,4 +327,101 @@ if (document.getElementById("analysis-summary")) {
   }
 }
 
+// ===========================
+// Config local
+// ===========================
+const API_BASE = "http://127.0.0.1:8000"; // Ajusta si tu FastAPI corre en otro host/puerto
+const MAX_FILES = 3;
+
+const $ = (s) => document.querySelector(s);
+const on = (el, ev, fn) => el && el.addEventListener(ev, fn);
+const show = (el) => el && el.classList.remove("hidden");
+const hide = (el) => el && el.classList.add("hidden");
+
+// ===========================
+// Página: Sector Privado (subida)
+// ===========================
+(function wireSectorPrivado() {
+  const uploadForm   = $("#uploadForm");
+  const uploadBox    = $(".upload-box");
+  const fileInput    = $("#fileInput");
+  const fileSelected = $("#fileSelected");
+  const fileNameSpan = $("#fileName");
+  const analyzeBtn   = $("#analyzeBtn");
+  const changeFileBtn = $("#changeFileBtn");
+
+  if (!uploadForm || !uploadBox || !fileInput) return; // no estamos en esta página
+
+  let selectedFiles = [];
+  fileInput.multiple = true;
+
+  function setFiles(files) {
+    const pdfs = Array.from(files).filter(f => f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"));
+    if (!pdfs.length) { alert("Selecciona al menos un PDF."); return; }
+    if (pdfs.length > MAX_FILES) {
+      alert(`Máximo ${MAX_FILES} archivos. Se tomarán los primeros ${MAX_FILES}.`);
+    }
+    selectedFiles = pdfs.slice(0, MAX_FILES);
+    fileNameSpan.textContent = selectedFiles.map(f => f.name).join(", ");
+    show(fileSelected);
+    show(changeFileBtn);
+  }
+
+  // click abre selector
+  on(uploadBox, "click", () => fileInput.click());
+  on(fileInput, "change", (e) => setFiles(e.target.files));
+
+  // drag & drop
+  ["dragenter", "dragover", "dragleave", "drop"].forEach(ev => {
+    on(uploadBox, ev, (e) => {
+      e.preventDefault(); e.stopPropagation();
+      if (ev === "dragenter" || ev === "dragover") uploadBox.classList.add("dragover");
+      else uploadBox.classList.remove("dragover");
+    });
+  });
+  on(uploadBox, "drop", (e) => {
+    const dt = e.dataTransfer;
+    if (dt && dt.files && dt.files.length) setFiles(dt.files);
+  });
+
+  // cambiar
+  on(changeFileBtn, "click", () => {
+    selectedFiles = [];
+    fileInput.value = "";
+    fileNameSpan.textContent = "";
+    hide(fileSelected);
+    hide(changeFileBtn);
+  });
+
+  // subir y pasar al visor (o quedarse y solo analizar; aquí guardamos info en sessionStorage)
+  on(analyzeBtn, "click", async (e) => {
+    e.preventDefault();
+    if (!selectedFiles.length) { alert("Primero selecciona archivos."); return; }
+
+    const fd = new FormData();
+    selectedFiles.forEach(f => fd.append("files", f, f.name));
+
+    try {
+      const upRes = await fetch(`${API_BASE}/api/upload/temp`, { method: "POST", body: fd });
+      if (!upRes.ok) {
+        const err = await upRes.json().catch(() => ({}));
+        throw new Error(err.detail || `Error al subir (${upRes.status})`);
+      }
+      const upData = await upRes.json();
+
+      // Guardar lo que necesitamos para el visor
+      sessionStorage.setItem("ppm_saved_files", JSON.stringify(upData.saved || []));
+      sessionStorage.setItem("ppm_saved_route", upData.ruta_relativa || "temp/temp");
+
+      // Redirigir al visor (el otro HTML)
+      // Ajusta el nombre de archivo si tu visor se llama distinto (p.ej. "visor.html")
+      window.location.href = "visor.html";
+    } catch (err) {
+      console.error(err);
+      alert(`Error: ${err.message}`);
+    }
+  });
+})();
+
+
 
