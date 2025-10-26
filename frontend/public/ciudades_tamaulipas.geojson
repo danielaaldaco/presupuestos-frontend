@@ -1,0 +1,11 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Reynosa" }, "geometry": { "type": "Point", "coordinates": [-98.2833, 26.0833] } },
+    { "type": "Feature", "properties": { "name": "Matamoros" }, "geometry": { "type": "Point", "coordinates": [-97.5000, 25.8667] } },
+    { "type": "Feature", "properties": { "name": "Nuevo Laredo" }, "geometry": { "type": "Point", "coordinates": [-99.5167, 27.4833] } },
+    { "type": "Feature", "properties": { "name": "Victoria" }, "geometry": { "type": "Point", "coordinates": [-99.1333, 23.7333] } },
+    { "type": "Feature", "properties": { "name": "Tampico" }, "geometry": { "type": "Point", "coordinates": [-97.8500, 22.2167] } },
+    { "type": "Feature", "properties": { "name": "Madero" }, "geometry": { "type": "Point", "coordinates": [-97.8333, 22.2500] } }
+  ]
+}

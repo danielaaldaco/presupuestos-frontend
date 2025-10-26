@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Mérida" }, "geometry": { "type": "Point", "coordinates": [-89.6167, 20.9667] } },
+    { "type": "Feature", "properties": { "name": "Kanasín" }, "geometry": { "type": "Point", "coordinates": [-89.5667, 20.9333] } },
+    { "type": "Feature", "properties": { "name": "Valladolid" }, "geometry": { "type": "Point", "coordinates": [-88.2000, 20.6833] } },
+    { "type": "Feature", "properties": { "name": "Progreso" }, "geometry": { "type": "Point", "coordinates": [-89.6667, 21.2833] } }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Cancún" }, "geometry": { "type": "Point", "coordinates": [-86.8500, 21.1667] } },
+    { "type": "Feature", "properties": { "name": "Playa del Carmen" }, "geometry": { "type": "Point", "coordinates": [-87.0833, 20.6167] } },
+    { "type": "Feature", "properties": { "name": "Chetumal" }, "geometry": { "type": "Point", "coordinates": [-88.3000, 18.5000] } },
+    { "type": "Feature", "properties": { "name": "Cozumel" }, "geometry": { "type": "Point", "coordinates": [-86.9500, 20.5000] } }
+  ]
+}

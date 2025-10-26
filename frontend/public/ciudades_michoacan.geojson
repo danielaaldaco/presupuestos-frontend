@@ -1,0 +1,10 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Morelia" }, "geometry": { "type": "Point", "coordinates": [-101.1833, 19.7000] } },
+    { "type": "Feature", "properties": { "name": "Uruapan" }, "geometry": { "type": "Point", "coordinates": [-102.0500, 19.4167] } },
+    { "type": "Feature", "properties": { "name": "Zamora" }, "geometry": { "type": "Point", "coordinates": [-102.2833, 19.9833] } },
+    { "type": "Feature", "properties": { "name": "Lázaro Cárdenas" }, "geometry": { "type": "Point", "coordinates": [-102.2000, 17.9500] } },
+    { "type": "Feature", "properties": { "name": "Apatzingán" }, "geometry": { "type": "Point", "coordinates": [-102.3500, 19.0833] } }
+  ]
+}

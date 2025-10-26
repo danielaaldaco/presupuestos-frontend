@@ -1,0 +1,10 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Iztapalapa" }, "geometry": { "type": "Point", "coordinates": [-99.0833, 19.3500] } },
+    { "type": "Feature", "properties": { "name": "Gustavo A. Madero" }, "geometry": { "type": "Point", "coordinates": [-99.1167, 19.5000] } },
+    { "type": "Feature", "properties": { "name": "Álvaro Obregón" }, "geometry": { "type": "Point", "coordinates": [-99.2167, 19.3667] } },
+    { "type": "Feature", "properties": { "name": "Coyoacán" }, "geometry": { "type": "Point", "coordinates": [-99.1667, 19.3333] } },
+    { "type": "Feature", "properties": { "name": "Cuauhtémoc" }, "geometry": { "type": "Point", "coordinates": [-99.1500, 19.4333] } }
+  ]
+}

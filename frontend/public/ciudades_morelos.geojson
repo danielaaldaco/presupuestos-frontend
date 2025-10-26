@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Cuernavaca" }, "geometry": { "type": "Point", "coordinates": [-99.2333, 18.9167] } },
+    { "type": "Feature", "properties": { "name": "Jiutepec" }, "geometry": { "type": "Point", "coordinates": [-99.1833, 18.8833] } },
+    { "type": "Feature", "properties": { "name": "Cuautla" }, "geometry": { "type": "Point", "coordinates": [-98.9500, 18.8000] } },
+    { "type": "Feature", "properties": { "name": "Temixco" }, "geometry": { "type": "Point", "coordinates": [-99.2667, 18.8500] } }
+  ]
+}

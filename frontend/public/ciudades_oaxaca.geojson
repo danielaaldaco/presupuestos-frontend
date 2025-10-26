@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Oaxaca" }, "geometry": { "type": "Point", "coordinates": [-96.7220, 17.0660] } },
+    { "type": "Feature", "properties": { "name": "Tuxtepec" }, "geometry": { "type": "Point", "coordinates": [-96.1167, 18.0833] } },
+    { "type": "Feature", "properties": { "name": "Juchitán" }, "geometry": { "type": "Point", "coordinates": [-95.0167, 16.4333] } },
+    { "type": "Feature", "properties": { "name": "Salina Cruz" }, "geometry": { "type": "Point", "coordinates": [-95.2000, 16.1667] } }
+  ]
+}

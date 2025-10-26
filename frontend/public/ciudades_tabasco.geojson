@@ -1,0 +1,8 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Villahermosa" }, "geometry": { "type": "Point", "coordinates": [-92.9167, 17.9833] } },
+    { "type": "Feature", "properties": { "name": "Cárdenas" }, "geometry": { "type": "Point", "coordinates": [-93.3667, 17.9833] } },
+    { "type": "Feature", "properties": { "name": "Comalcalco" }, "geometry": { "type": "Point", "coordinates": [-93.2000, 18.2667] } }
+  ]
+}

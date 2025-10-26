@@ -1,0 +1,10 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Ecatepec" }, "geometry": { "type": "Point", "coordinates": [-99.0500, 19.6000] } },
+    { "type": "Feature", "properties": { "name": "Nezahualcóyotl" }, "geometry": { "type": "Point", "coordinates": [-99.0167, 19.4000] } },
+    { "type": "Feature", "properties": { "name": "Naucalpan" }, "geometry": { "type": "Point", "coordinates": [-99.2333, 19.4667] } },
+    { "type": "Feature", "properties": { "name": "Toluca" }, "geometry": { "type": "Point", "coordinates": [-99.6500, 19.2833] } },
+    { "type": "Feature", "properties": { "name": "Tlalnepantla" }, "geometry": { "type": "Point", "coordinates": [-99.2000, 19.5333] } }
+  ]
+}

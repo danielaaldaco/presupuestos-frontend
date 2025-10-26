@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Tuxtla Gutiérrez" }, "geometry": { "type": "Point", "coordinates": [-93.1167, 16.7500] } },
+    { "type": "Feature", "properties": { "name": "Tapachula" }, "geometry": { "type": "Point", "coordinates": [-92.2667, 14.9000] } },
+    { "type": "Feature", "properties": { "name": "San Cristóbal" }, "geometry": { "type": "Point", "coordinates": [-92.6333, 16.7333] } },
+    { "type": "Feature", "properties": { "name": "Comitán" }, "geometry": { "type": "Point", "coordinates": [-92.1333, 16.2500] } }
+  ]
+}
