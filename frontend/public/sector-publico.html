@@ -6,39 +6,76 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   
   <style>
-    #map { height: 100vh; margin: 0; padding: 0; background-color: #f2f2f2; }
-    body { margin: 0; }
-    
-    /* Style for STATE labels */
+    /* Estilos generales */
+    body { 
+      margin: 0; 
+      font-family: sans-serif; 
+    }
+
+    /* Contenedor principal (Flexbox) */
+    .map-container {
+      display: flex; 
+      height: 100vh; /* Ocupa toda la altura de la pantalla */
+    }
+
+    /* Div del mapa */
+    #map {
+      height: 100%; /* ¡Crucial! Le da altura al mapa */
+      width: 60%;  /* Ocupa el 60% del ancho */
+      background-color: #f2f2f2; 
+    }
+
+    /* Div para la tabla */
+    .table-container {
+      height: 100%; 
+      width: 40%;  
+      padding: 20px; 
+      box-sizing: border-box; 
+      overflow-y: auto; 
+      border-left: 1px solid #ccc; 
+    }
+
+    /* Estilo para etiquetas de ESTADOS */
     .state-label-icon {
       color: #000; 
       font-weight: normal; 
-      /* --- CHANGE HERE: Increased font size --- */
-      font-size: 12px; 
+      font-size: 12px; /* Más grande para estados */
       text-align: center;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Soft black shadow */
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Sombra suave */
       pointer-events: none; white-space: nowrap;
     }
 
-    /* Style for CITY labels */
+    /* Estilo para etiquetas de CIUDADES */
     .city-label-icon {
       color: #000; 
       font-weight: normal; 
-      font-size: 10px; 
+      font-size: 10px; /* Más pequeño para ciudades */
       text-align: center;
-      text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.7), -1px -1px 0 rgba(255, 255, 255, 0.7), 1px -1px 0 rgba(255, 255, 255, 0.7), -1px 1px 0 rgba(255, 255, 255, 0.7); /* Subtle white shadow */
+      /* Sombra blanca sutil para resaltar */
+      text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.7), -1px -1px 0 rgba(255, 255, 255, 0.7), 1px -1px 0 rgba(255, 255, 255, 0.7), -1px 1px 0 rgba(255, 255, 255, 0.7);
       pointer-events: none;
       white-space: nowrap;
     }
   </style>
 </head>
 <body>
-  <div id="map"></div>
+
+  <div class="map-container"> 
+    
+    <div id="map"></div> 
+    
+    <div class="table-container"> 
+      <h2>Datos del Estado/Ciudad</h2>
+      <p>Aquí irá la tabla...</p> 
+    </div>
+    
+  </div> 
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  
   <script>
     
-    // --- (Color functions remain the same) ---
+    // --- (Funciones de color sin cambios) ---
     function darkenColor(hex, percent) {
         var f=parseInt(hex.slice(1),16),t=percent<0?0:255,p=percent<0?percent*-1:percent,R=f>>16,G=(f>>8)&0x00ff,B=f&0x0000ff;
         return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
@@ -51,60 +88,88 @@
         return { fillColor: baseColor, color: borderColor, weight: 2, fillOpacity: 0.9 };
     }
 
-    // --- Map centered on Mexico ---
-    const map = L.map('map').setView([23.6345, -102.5528], 5);
+    // --- Mapa centrado en México ---
+    const map = L.map('map').setView([23.6345, -102.5528], 5); 
     var capaCiudades = L.layerGroup().addTo(map);
 
-    // --- LEVEL 1: Load STATES ---
+    // --- NIVEL 1: Cargar ESTADOS ---
+    // Asegúrate que 'estados_mexico.geojson' esté en la misma carpeta (public/)
     fetch('estados_mexico.geojson') 
-      .then(res => res.json())
+      .then(res => {
+          if (!res.ok) { // Verifica si el archivo se encontró
+             throw new Error(`HTTP error! status: ${res.status} al buscar estados_mexico.geojson`);
+          }
+          return res.json();
+      })
       .then(data => {
+        console.log("GeoJSON de estados cargado correctamente."); // Mensaje de éxito
         L.geoJSON(data, {
           style: function(feature) { return getRandomColorAndBorder(); },
           onEachFeature: function (feature, layer) {
             
             var nombreEstado = feature.properties.name; 
-            
-            // Fixed STATE labels
+            if (!nombreEstado) { // Verificación extra
+              console.warn("Estado encontrado sin propiedad 'name':", feature.properties);
+              nombreEstado = "Estado sin nombre"; // Nombre por defecto
+            }
+
+            // Nombres fijos de ESTADOS
             var center = layer.getBounds().getCenter();
             var labelIcon = L.divIcon({
-                className: 'state-label-icon', // Uses the updated CSS
+                className: 'state-label-icon',
                 html: `${nombreEstado}`,
                 iconSize: [120, 20], iconAnchor: [60, 10]
             });
             L.marker(center, { icon: labelIcon, interactive: false }).addTo(map);
 
-            // Click Logic (Level 1 -> Level 2)
+            // Lógica de Clic (Nivel 1 -> Nivel 2)
             layer.on('click', function () {
               map.fitBounds(layer.getBounds());
               const estado = feature.properties.name; 
-              console.log("Estado:", estado);
+              console.log("Clic en Estado:", estado);
               cargarCiudades(estado); 
             });
           }
         }).addTo(map);
+      })
+      .catch(error => { // Manejo de errores de fetch
+          console.error('Error al cargar estados_mexico.geojson:', error);
+          alert('¡Error! No se pudo cargar el archivo de estados. Revisa la consola (F12) y la ruta del archivo.');
       });
 
-    // --- LEVEL 2: Function to load CITIES (as text labels) ---
+    // --- NIVEL 2: Función para cargar CIUDADES (como etiquetas) ---
     function cargarCiudades(estado) {
       capaCiudades.clearLayers(); 
+      console.log("Intentando cargar ciudades para:", estado); // Log para depurar
 
       var archivoCiudades = null; 
 
+      // Mapeo de estados a sus archivos de ciudades (puntos)
       if (estado === "Coahuila") { 
-        archivoCiudades = 'ciudades_coahuila.geojson'; // Uses the updated POINT file
+        archivoCiudades = 'ciudades_coahuila.geojson';
       }
       // else if (estado === "Nuevo León") { archivoCiudades = 'ciudades_nuevoleon.geojson'; }
 
       if (archivoCiudades) {
+        // Asegúrate que este archivo esté en la misma carpeta (public/)
         fetch(archivoCiudades) 
-          .then(res => res.json())
+          .then(res => {
+              if (!res.ok) {
+                 throw new Error(`HTTP error! status: ${res.status} al buscar ${archivoCiudades}`);
+              }
+              return res.json();
+          })
           .then(data => {
+            console.log(`GeoJSON de ${archivoCiudades} cargado.`); // Mensaje de éxito
             L.geoJSON(data, {
               
               pointToLayer: function (feature, latlng) {
                 
                 var nombreCiudad = feature.properties.name; 
+                if (!nombreCiudad) {
+                  console.warn("Ciudad encontrada sin propiedad 'name':", feature.properties);
+                  nombreCiudad = "Ciudad sin nombre";
+                }
                 
                 var labelIcon = L.divIcon({
                     className: 'city-label-icon', 
@@ -113,16 +178,26 @@
                     iconAnchor: [40, 10] 
                 });
                 
+                // Marcador invisible con el nombre de la ciudad
                 return L.marker(latlng, { 
                     icon: labelIcon,
                     interactive: true 
                 }).on('click', function() {
+                    console.log("Clic en Ciudad:", nombreCiudad); // Log para depurar
                     alert(`Has hecho clic en ${nombreCiudad}`);
+                    // Aquí llamarías a la función para cargar datos en la tabla
+                    // ej: mostrarDatosEnTabla(estado, nombreCiudad); 
                 });
               }
 
             }).addTo(capaCiudades);
+          })
+          .catch(error => { // Manejo de errores
+             console.error(`Error al cargar ${archivoCiudades}:`, error);
+             alert(`¡Error! No se pudo cargar el archivo de ciudades ${archivoCiudades}. Revisa la consola (F12).`);
           });
+      } else {
+          console.log("No hay archivo de ciudades definido para:", estado); // Log si no hay archivo
       }
     }
   </script>
