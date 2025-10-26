@@ -2,207 +2,131 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Mapa de México (Ciudades)</title>
+  <title>Mapa de México - Sector Público</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  
-  <style>
-    /* Estilos generales */
-    body { 
-      margin: 0; 
-      font-family: sans-serif; 
-    }
-    .map-container {
-      display: flex; 
-      height: 100vh;
-    }
-    #map {
-      height: 100%; 
-      width: 60%;  
-      background-color: #c5c9e9; 
-    }
-    .table-container {
-      height: 100%; 
-      width: 40%;  
-      padding: 20px; 
-      box-sizing: border-box; 
-      overflow-y: auto; 
-      border-left: 1px solid #ccc; 
-    }
-    /* Estilo para etiquetas de ESTADOS */
-    .state-label-icon {
-      color: #000; 
-      font-weight: normal; 
-      font-size: 12px;
-      text-align: center;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-      pointer-events: none; white-space: nowrap;
-    }
-    
-    /* === NUEVO ESTILO PARA TOOLTIP (Etiqueta de ciudad al pasar mouse) === */
-    .leaflet-tooltip {
-        background-color: #FFF8DC; /* Color Cornsilk (beige claro) */
-        border: 1px solid #777;    /* Borde gris oscuro */
-        border-radius: 4px;        /* Esquinas redondeadas */
-        color: #333;               /* Texto gris oscuro */
-        font-size: 10px;           /* Tamaño de letra */
-        font-weight: bold;         /* Negritas */
-        padding: 3px 6px;          /* Espacio interior */
-        white-space: nowrap;       /* Evita que se corte */
-        box-shadow: 0 1px 3px rgba(0,0,0,0.4); /* Sombra suave */
-    }
-    /* Opcional: Cambiar la flechita del tooltip */
-    .leaflet-tooltip-top:before,
-    .leaflet-tooltip-bottom:before,
-    .leaflet-tooltip-left:before,
-    .leaflet-tooltip-right:before {
-        border-color: #777 transparent transparent transparent; /* Color del borde de la flecha */
-    }
-    /* === FIN NUEVO ESTILO === */
 
+  <!-- ✅ Enlace al CSS completo -->
+  <link rel="stylesheet" href="styles.css" /> 
+  <style>
+    /* Ajustes mínimos para compatibilidad directa si no usas archivo externo */
+    html, body { margin: 0; padding: 0; }
+    #map { width: 100%; height: 100%; }
   </style>
 </head>
-<body>
+<body class="private-body">
 
-  <div class="map-container"> 
-    <div id="map"></div> 
-    <div class="table-container"> 
-      <h2>Datos del Estado/Ciudad</h2>
-      <p>Aquí irá la tabla...</p> 
+    <!-- ===== NAVBAR ===== -->
+  <header class="navbar">
+    <div class="logo">Papus <span>por México</span></div>
+    <nav class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="index.html#sobre-nosotros">Sobre Nosotros</a>
+      <a href="sector-publico.html">Sector Público</a>
+      <a href="sector-privado.html" class="active">Sector Privado</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+  </header>
+
+  <!-- 🔹 CONTENEDOR PRINCIPAL DEL MAPA -->
+  <section class="map-page">
+    <div class="map-wrap">
+      <div id="map"></div>
+      <div class="map-side">
+        <h2>Datos del Estado / Ciudad</h2>
+        <div class="map-info">
+          <p>Haz clic en un estado para ver sus ciudades.</p>
+        </div>
+      </div>
     </div>
-  </div> 
+  </section>
+
+  <footer class="footer">
+    <p>© 2025 TransparenciaMX — Todos los derechos reservados.</p>
+  </footer>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  
   <script>
-    
-    // --- (Funciones de color sin cambios) ---
+    // ==================== MAPA ====================
+
     function darkenColor(hex, percent) {
-        var f=parseInt(hex.slice(1),16),t=percent<0?0:255,p=percent<0?percent*-1:percent,R=f>>16,G=(f>>8)&0x00ff,B=f&0x0000ff;
-        return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
+        var f=parseInt(hex.slice(1),16),
+        t=percent<0?0:255,p=percent<0?percent*-1:percent,
+        R=f>>16,G=(f>>8)&0x00ff,B=f&0x0000ff;
+        return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000
+        +(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B))
+        .toString(16).slice(1);
     }
+
     function getRandomColorAndBorder() {
-        const colors = [ '#4CAF50', '#FFD700', '#F44336' ];
-        const randomIndex = Math.floor(Math.random() * colors.length);
-        const baseColor = colors[randomIndex];
-        const borderColor = darkenColor(baseColor, -0.2);
-        return { fillColor: baseColor, color: borderColor, weight: 2, fillOpacity: 0.9 };
+        const colors = ['#4CAF50','#FFD700','#F44336'];
+        const base = colors[Math.floor(Math.random()*colors.length)];
+        return { fillColor: base, color: darkenColor(base,-0.2), weight: 2, fillOpacity: 0.9 };
     }
 
-    // --- Inicialización del mapa ---
-    const map = L.map('map').setView([23.6345, -102.5528], 5); 
-    var capaCiudades = L.layerGroup().addTo(map);
+    const map = L.map('map').setView([23.6345, -102.5528], 5);
+    const capaCiudades = L.layerGroup().addTo(map);
 
-    // --- NIVEL 1: Cargar ESTADOS ---
-    fetch('estados_mexico.geojson') 
-      .then(res => {
-          if (!res.ok) { throw new Error(`HTTP error! status: ${res.status} al buscar estados_mexico.geojson`); }
-          return res.json();
-      })
+    fetch('estados_mexico.geojson')
+      .then(res => res.json())
       .then(data => {
-        console.log("GeoJSON de estados cargado.");
         L.geoJSON(data, {
-          style: function(feature) { return getRandomColorAndBorder(); },
-          onEachFeature: function (feature, layer) {
-            
-            var nombreEstado = feature.properties.name; 
-            if (!nombreEstado) { nombreEstado = "Estado sin nombre"; }
-
-            // Nombres fijos de ESTADOS
-            var center = layer.getBounds().getCenter();
-            var labelIcon = L.divIcon({
-                className: 'state-label-icon', html: `${nombreEstado}`,
-                iconSize: [120, 20], iconAnchor: [60, 10]
+          style: getRandomColorAndBorder,
+          onEachFeature: (feature, layer) => {
+            const nombre = feature.properties.name || "Sin nombre";
+            const center = layer.getBounds().getCenter();
+            const labelIcon = L.divIcon({
+              className: 'state-label-icon',
+              html: nombre,
+              iconSize: [120,20],
+              iconAnchor: [60,10]
             });
-            L.marker(center, { icon: labelIcon, interactive: false }).addTo(map);
+            L.marker(center, { icon: labelIcon, interactive:false }).addTo(map);
 
-            // Lógica de Clic (Nivel 1 -> Nivel 2)
-            layer.on('click', function () {
+            layer.on('click', () => {
               map.fitBounds(layer.getBounds());
-              const estado = feature.properties.name; 
-              console.log("Clic en Estado:", estado);
-              cargarCiudades(estado); 
+              cargarCiudades(nombre);
             });
           }
         }).addTo(map);
       })
-      .catch(error => { 
-          console.error('Error al cargar estados_mexico.geojson:', error);
-          alert('¡Error! No se pudo cargar el archivo de estados.');
-      });
+      .catch(err => alert("Error al cargar estados: " + err));
 
-    // --- NIVEL 2: Función para cargar CIUDADES (como puntos azules) ---
     function cargarCiudades(estado) {
-      capaCiudades.clearLayers(); 
-      console.log("Cargando ciudades para:", estado);
+      capaCiudades.clearLayers();
+      const archivos = {
+        "Coahuila": "ciudades_coahuila.geojson",
+        "Nuevo León": "ciudades_nuevoleon.geojson",
+        "Chihuahua": "ciudades_chihuahua.geojson",
+        "Jalisco": "ciudades_jalisco.geojson",
+        "Sinaloa": "ciudades_sinaloa.geojson",
+        "Sonora": "ciudades_sonora.geojson",
+        "Durango": "ciudades_durango.geojson",
+        "Baja California": "ciudades_bajacalifornia.geojson"
+      };
+      const archivo = archivos[estado];
+      if (!archivo) return;
 
-      var archivoCiudades = null; 
-
-      if (estado === "Coahuila") { 
-        archivoCiudades = 'ciudades_coahuila.geojson';
-      }
-      else if (estado === "Nuevo León") { 
-        archivoCiudades = 'ciudades_nuevoleon.geojson'; 
-      }
-      else if (estado === "Chihuahua") { 
-        archivoCiudades = 'ciudades_chihuahua.geojson'; 
-      }
-      else if (estado === "Jalisco") { 
-        archivoCiudades = 'ciudades_jalisco.geojson'; 
-      }
-      else if (estado === "Sinaloa") { 
-        archivoCiudades = 'ciudades_sinaloa.geojson'; 
-      }
-      else if (estado === "Sonora") { 
-        archivoCiudades = 'ciudades_sonora.geojson'; 
-      }
-      else if (estado === "Durango") { 
-        archivoCiudades = 'ciudades_durango.geojson'; 
-      }
-      else if (estado === "Baja California") { 
-        archivoCiudades = 'ciudades_bajacalifornia.geojson'; 
-      }
-
-      if (archivoCiudades) {
-        fetch(archivoCiudades) 
-          .then(res => {
-              if (!res.ok) { throw new Error(`HTTP error! status: ${res.status} al buscar ${archivoCiudades}`); }
-              return res.json();
-          })
-          .then(data => {
-            console.log(`GeoJSON de ${archivoCiudades} cargado.`);
-            L.geoJSON(data, {
-              
-              pointToLayer: function (feature, latlng) {
-                
-                var nombreCiudad = feature.properties.name; 
-                if (!nombreCiudad) { nombreCiudad = "Ciudad sin nombre"; }
-
-                // identificador de la ciudad
-                return L.circleMarker(latlng, {
-                  radius: 6,           
-                  fillColor: "#3388ff", 
-                  color: "#000",        
-                  weight: 1,           
-                  opacity: 1,
-                  fillOpacity: 0.8
-                })
-                .bindTooltip(nombreCiudad) // Muestra el nombre al pasar el mouse
-                .on('click', function() {
-                    // --- Click en la Ciudad ---
-                    console.log("Clic en Ciudad:", nombreCiudad);
-                    // aqui iria el evento de que al hacer click en la ciudad 
-                });
-              }
-
-            }).addTo(capaCiudades);
-          })
-          .catch(error => { 
-             console.error(`Error al cargar ${archivoCiudades}:`, error);
-             alert(`¡Error! No se pudo cargar el archivo de ciudades ${archivoCiudades}.`);
-          });
-      } else {
-          console.log("No hay archivo de ciudades definido para:", estado);
-      }
+      fetch(archivo)
+        .then(res => res.json())
+        .then(data => {
+          L.geoJSON(data, {
+            pointToLayer: (feature, latlng) => {
+              const nombreCiudad = feature.properties.name || "Ciudad";
+              return L.circleMarker(latlng, {
+                radius: 6, fillColor: "#3388ff", color: "#000",
+                weight: 1, opacity: 1, fillOpacity: 0.8
+              })
+              .bindTooltip(nombreCiudad)
+              .on('click', () => {
+                document.querySelector('.map-info').innerHTML = `
+                  <p><strong>Estado:</strong> ${estado}</p>
+                  <p><strong>Ciudad:</strong> ${nombreCiudad}</p>
+                `;
+              });
+            }
+          }).addTo(capaCiudades);
+        })
+        .catch(err => alert("Error al cargar ciudades: " + err));
     }
   </script>
 </body>
