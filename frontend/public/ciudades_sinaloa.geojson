@@ -1,0 +1,10 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Culiacán" }, "geometry": { "type": "Point", "coordinates": [-107.3940, 24.8090] } },
+    { "type": "Feature", "properties": { "name": "Mazatlán" }, "geometry": { "type": "Point", "coordinates": [-106.4167, 23.2167] } },
+    { "type": "Feature", "properties": { "name": "Los Mochis" }, "geometry": { "type": "Point", "coordinates": [-108.9944, 25.7944] } },
+    { "type": "Feature", "properties": { "name": "Guasave" }, "geometry": { "type": "Point", "coordinates": [-108.4667, 25.5667] } },
+    { "type": "Feature", "properties": { "name": "Navolato" }, "geometry": { "type": "Point", "coordinates": [-107.7000, 24.7667] } }
+  ]
+}
