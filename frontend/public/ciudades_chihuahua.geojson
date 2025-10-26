@@ -1,0 +1,13 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Juárez" }, "geometry": { "type": "Point", "coordinates": [-106.4833, 31.7333] } },
+    { "type": "Feature", "properties": { "name": "Chihuahua" }, "geometry": { "type": "Point", "coordinates": [-106.0889, 28.6353] } },
+    { "type": "Feature", "properties": { "name": "Delicias" }, "geometry": { "type": "Point", "coordinates": [-105.4667, 28.1833] } },
+    { "type": "Feature", "properties": { "name": "Cuauhtémoc" }, "geometry": { "type": "Point", "coordinates": [-106.8667, 28.4000] } },
+    { "type": "Feature", "properties": { "name": "Parral" }, "geometry": { "type": "Point", "coordinates": [-105.6667, 26.9333] } },
+    { "type": "Feature", "properties": { "name": "Nuevo Casas Grandes" }, "geometry": { "type": "Point", "coordinates": [-107.9167, 30.4167] } },
+    { "type": "Feature", "properties": { "name": "Camargo" }, "geometry": { "type": "Point", "coordinates": [-105.1667, 27.6833] } },
+    { "type": "Feature", "properties": { "name": "Jiménez" }, "geometry": { "type": "Point", "coordinates": [-104.9167, 27.1333] } }
+  ]
+}

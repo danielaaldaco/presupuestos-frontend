@@ -1,0 +1,10 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Tijuana" }, "geometry": { "type": "Point", "coordinates": [-117.0333, 32.5333] } },
+    { "type": "Feature", "properties": { "name": "Mexicali" }, "geometry": { "type": "Point", "coordinates": [-115.4667, 32.6500] } },
+    { "type": "Feature", "properties": { "name": "Ensenada" }, "geometry": { "type": "Point", "coordinates": [-116.6167, 31.8667] } },
+    { "type": "Feature", "properties": { "name": "Rosarito" }, "geometry": { "type": "Point", "coordinates": [-117.0500, 32.3667] } },
+    { "type": "Feature", "properties": { "name": "Tecate" }, "geometry": { "type": "Point", "coordinates": [-116.6167, 32.5667] } }
+  ]
+}
