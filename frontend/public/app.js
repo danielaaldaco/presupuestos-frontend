@@ -141,3 +141,190 @@ if (window.location.pathname.includes("abrir-archivo.html")) {
   }
 }
 
+// ===========================
+// 📊 CARGA DINÁMICA DE JSON PARA AMBOS SECTORES
+// ===========================
+if (document.getElementById("analysis-summary")) {
+  const summaryContainer = document.getElementById("analysis-summary");
+
+  // 1️⃣ Verifica si viene desde el sector privado (sessionStorage)
+  const storedData = sessionStorage.getItem("analysisData");
+
+  // 2️⃣ Si no, intenta cargar un JSON precargado del sector público
+  // (esto puede adaptarse según la selección de estado/ciudad)
+  const publicFile = sessionStorage.getItem("selectedPublicJson"); // ejemplo
+
+  if (storedData) {
+    const jsonData = JSON.parse(storedData);
+    renderAnalysis(jsonData);
+  } else if (publicFile) {
+    fetch(publicFile)
+      .then(res => res.json())
+      .then(data => renderAnalysis(data))
+      .catch(err => {
+        summaryContainer.innerHTML = `<p style="color:red;">Error al cargar JSON público: ${err}</p>`;
+      });
+  } else {
+    summaryContainer.innerHTML = "<p>No hay análisis cargado aún.</p>";
+  }
+
+  // 🔹 Función de renderización (común para ambos)
+  function renderAnalysis(data) {
+    if (!data || !data.resumen_general) {
+      summaryContainer.innerHTML = "<p>No se encontró información del análisis.</p>";
+      return;
+    }
+
+    const resumen = data.resumen_general;
+    const alertas = data.alertas || [];
+    const recomendaciones = data.recomendaciones || [];
+    const partidas = data.partidas || [];
+
+    summaryContainer.innerHTML = `
+      <div class="summary-card">
+        <h3>Resumen General</h3>
+        <ul>
+          <li><strong>Costo en contrato:</strong> $${resumen.costo_en_contrato.toLocaleString()}</li>
+          <li><strong>Precio estimado de mercado:</strong> $${resumen.precio_estimado_mercado.toLocaleString()}</li>
+          <li><strong>Diferencia total:</strong> $${resumen.diferencia_total.toLocaleString()} (${resumen.diferencia_porcentaje}%)</li>
+          <li><strong>Credibilidad:</strong> ${resumen.credibilidad}%</li>
+        </ul>
+      </div>
+
+      <div class="alerts-card">
+        <h3>Alertas</h3>
+        <ul>${alertas.map(a => `<li>⚠️ ${a}</li>`).join("")}</ul>
+      </div>
+
+      <div class="recs-card">
+        <h3>Recomendaciones</h3>
+        <ul>${recomendaciones.map(r => `<li>💡 ${r}</li>`).join("")}</ul>
+      </div>
+
+      <button id="toggleDetails" class="details-btn">Ver Detalles</button>
+      <div id="detailsSection" class="details hidden">
+        <h3>Partidas Detalladas</h3>
+        <table class="partidas-table">
+          <thead>
+            <tr>
+              <th>Concepto</th><th>Unidad</th><th>Cantidad</th><th>Costo Contrato</th><th>Precio Mercado</th><th>Diferencia</th><th>%</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${partidas.map(p => `
+              <tr>
+                <td>${p.concepto}</td>
+                <td>${p.unidad}</td>
+                <td>${p.cantidad}</td>
+                <td>$${p.costo_en_contrato.toLocaleString()}</td>
+                <td>$${p.precio_estimado_mercado.toLocaleString()}</td>
+                <td>$${p.diferencia.toLocaleString()}</td>
+                <td>${p["diferencia_%"].toFixed(2)}%</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    // 🔸 Toggle “Ver Detalles”
+    const toggleBtn = document.getElementById("toggleDetails");
+    const details = document.getElementById("detailsSection");
+    toggleBtn.addEventListener("click", () => {
+      details.classList.toggle("hidden");
+      toggleBtn.textContent = details.classList.contains("hidden") ? "Ver Detalles" : "Ocultar Detalles";
+    });
+  }
+}
+
+// ===========================
+// 📊 SIMULACIÓN DEL FLUJO JSON
+// ===========================
+if (document.getElementById("analysis-summary")) {
+  const summaryContainer = document.getElementById("analysis-summary");
+
+  // Simulación: seleccionamos el archivo público (sector público)
+  const publicJson = "data/ejemplo_analisis.json";
+
+  // Guardar la ruta (simulando una selección de estado/ciudad)
+  sessionStorage.setItem("selectedPublicJson", publicJson);
+
+  // Cargar el archivo
+  const file = sessionStorage.getItem("selectedPublicJson");
+
+  if (file) {
+    fetch(file)
+      .then(res => res.json())
+      .then(data => renderAnalysis(data))
+      .catch(err => {
+        summaryContainer.innerHTML = `<p style="color:red;">Error al cargar JSON: ${err}</p>`;
+      });
+  }
+
+  // Función común para mostrar el análisis
+  function renderAnalysis(data) {
+    if (!data || !data.resumen_general) {
+      summaryContainer.innerHTML = "<p>No se encontró información del análisis.</p>";
+      return;
+    }
+
+    const resumen = data.resumen_general;
+    const alertas = data.alertas || [];
+    const recomendaciones = data.recomendaciones || [];
+    const partidas = data.partidas || [];
+
+    summaryContainer.innerHTML = `
+      <div class="summary-card">
+        <h3>Resumen General</h3>
+        <ul>
+          <li><strong>Costo en contrato:</strong> $${resumen.costo_en_contrato.toLocaleString()}</li>
+          <li><strong>Precio estimado de mercado:</strong> $${resumen.precio_estimado_mercado.toLocaleString()}</li>
+          <li><strong>Diferencia total:</strong> $${resumen.diferencia_total.toLocaleString()} (${resumen.diferencia_porcentaje}%)</li>
+          <li><strong>Credibilidad:</strong> ${resumen.credibilidad}%</li>
+        </ul>
+      </div>
+
+      <div class="alerts-card">
+        <h3>Alertas</h3>
+        <ul>${alertas.map(a => `<li>⚠️ ${a}</li>`).join("")}</ul>
+      </div>
+
+      <div class="recs-card">
+        <h3>Recomendaciones</h3>
+        <ul>${recomendaciones.map(r => `<li>💡 ${r}</li>`).join("")}</ul>
+      </div>
+
+      <button id="toggleDetails" class="details-btn">Ver Detalles</button>
+      <div id="detailsSection" class="details hidden">
+        <h3>Partidas Detalladas</h3>
+        <table class="partidas-table">
+          <thead>
+            <tr>
+              <th>Concepto</th><th>Unidad</th><th>Cantidad</th><th>Costo Contrato</th><th>Precio Mercado</th><th>Diferencia</th><th>%</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${partidas.map(p => `
+              <tr>
+                <td>${p.concepto}</td>
+                <td>${p.unidad}</td>
+                <td>${p.cantidad}</td>
+                <td>$${p.costo_en_contrato.toLocaleString()}</td>
+                <td>$${p.precio_estimado_mercado.toLocaleString()}</td>
+                <td>$${p.diferencia.toLocaleString()}</td>
+                <td>${p["diferencia_%"].toFixed(2)}%</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    const toggleBtn = document.getElementById("toggleDetails");
+    const details = document.getElementById("detailsSection");
+    toggleBtn.addEventListener("click", () => {
+      details.classList.toggle("hidden");
+      toggleBtn.textContent = details.classList.contains("hidden") ? "Ver Detalles" : "Ocultar Detalles";
+    });
+  }
+}
+
+
