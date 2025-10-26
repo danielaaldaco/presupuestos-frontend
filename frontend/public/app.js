@@ -1,5 +1,5 @@
 // ===========================
-// 🌟 ANIMACIONES (INDEX)
+// ANIMACIONES (INDEX)
 // ===========================
 const sections = document.querySelectorAll(".fade-in, .slide-in-right");
 if (sections.length > 0) {
@@ -12,7 +12,7 @@ if (sections.length > 0) {
 }
 
 // ===========================
-// 📁 SECTOR PRIVADO - SUBIDA DE ARCHIVOS
+// ECTOR PRIVADO - SUBIDA DE ARCHIVOS
 // ===========================
 const fileInput = document.getElementById('fileInput');
 const uploadBox = document.querySelector('.upload-box');
@@ -70,7 +70,7 @@ if (fileInput && uploadBox) {
 }
 
 // ===========================
-// 🧭 REDIRECCIÓN AL VISOR
+// REDIRECCIÓN AL VISOR
 // ===========================
 if (analyzeBtn) {
   analyzeBtn.addEventListener('click', () => {
@@ -99,7 +99,7 @@ if (analyzeBtn) {
 }
 
 // ===========================
-// 🖥️ VISOR DE DOCUMENTO
+// VISOR DE DOCUMENTO
 // ===========================
 if (window.location.pathname.includes("abrir-archivo.html")) {
   const frame = document.getElementById("docFrame");
